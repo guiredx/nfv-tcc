@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
     web.vm.provision "shell", inline: "sudo apt-get install -y apache2"
     web.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
-      vb.cpus = 1
+      vb.cpus = 2
     end
   end
 
@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
     haproxy.vm.provision "shell", inline: "sudo apt-get install -y haproxy"
     haproxy.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
-      vb.cpus = 1
+      vb.cpus = 2
     end
   end
 
@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
     firewall.vm.provision "shell", inline: "sudo apt-get install -y iptables"
     firewall.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
-      vb.cpus = 1
+      vb.cpus = 2
     end
   end
 end
