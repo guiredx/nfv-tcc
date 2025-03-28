@@ -4,9 +4,9 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "vm-nfv-tcc2"
   # config.vm.network "public_network", bridge: "Wi-Fi"
   config.vm.network "private_network", ip: "192.168.56.101"
-  config.vm.network "forwarded_port", guest: 6633, host: 6633 # Porta para o OpenFlow
-  config.vm.network "forwarded_port", guest: 6640, host: 6640 # Porta para OVSDB
-  config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh" # Encaminhar porta SSH
+  # config.vm.network "forwarded_port", guest: 6633, host: 6633 # Porta para o OpenFlow
+  # config.vm.network "forwarded_port", guest: 6640, host: 6640 # Porta para OVSDB
+  # config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh" # Encaminhar porta SSH
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = 1024
