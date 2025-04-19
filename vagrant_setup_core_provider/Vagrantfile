@@ -53,8 +53,7 @@ Vagrant.configure("2") do |config|
 
 end
 
-
-
+# teste deploy
 # Vagrant.configure("2") do |config|
 #   # Configuração do Firewall
 #   config.vm.define "firewall" do |fw|
