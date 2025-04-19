@@ -16,7 +16,7 @@ sudo ip link set enp0s8 up
 # Criar configuração do FRR
 cat <<EOF | sudo tee /etc/frr/frr.conf > /dev/null
 frr defaults traditional
-hostname vm1
+hostname bgp-internal
 log file /var/log/frr/frr.log
 service integrated-vtysh-config
 !
