@@ -1,165 +1,60 @@
 Vagrant.configure("2") do |config|
 
   # VM com Open vSwitch
-  config.vm.define "ovs" do |ovs|
-    ovs.vm.box = "bento/ubuntu-22.04"
-    ovs.vm.hostname = "open-vswitch"
+  config.vm.define "openvswitch" do |ovs|
+    ovs.vm.box = "ubuntu/bionic64"
+    ovs.vm.hostname = "openvswitch"
     ovs.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
       vb.cpus = 1
       vb.name = "vagrant_openvswtich"
     end
-    ovs.vm.network "private_network", virtualbox__intnet: "br-wan-fw", auto_config: false
-    ovs.vm.network "private_network", virtualbox__intnet: "br-wan-bgp", auto_config: false
     ovs.vm.provision "shell", inline: <<-SHELL
       apt update
-      apt install -y openvswitch-switch net-tools
+      apt install -y openvswitch-switch iproute2 net-tools
 
+      # Criar bridge br-wan
       ovs-vsctl add-br br-wan
-      ovs-vsctl add-port br-wan eth1
-      ovs-vsctl add-port br-wan eth2
 
-      ip link set eth1 up
-      ip link set eth2 up
+      # Criar interfaces TAP (simulando cabos para outras VMs)
+      ip tuntap add mode tap eth1_fw
+      ip tuntap add mode tap eth2_bgp
+
+      # Ativar as interfaces TAP
+      ip link set eth1_fw up
+      ip link set eth2_bgp up
+
+      # Adicionar interfaces TAP à bridge
+      ovs-vsctl add-port br-wan eth1_fw
+      ovs-vsctl add-port br-wan eth2_bgp
+
+      # Subir a bridge
       ip link set br-wan up
     SHELL
   end
 
-  # Configuração do Firewall
+  # VM Firewall (conectada à eth1_fw da VM openvswitch)
   config.vm.define "firewall" do |fw|
-    fw.vm.box = "bento/ubuntu-22.04"
+    fw.vm.box = "ubuntu/bionic64"
     fw.vm.hostname = "firewall"
     fw.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
       vb.cpus = 2
       vb.name = "vagrant_firewall"
     end
-    fw.vm.network "private_network", virtualbox__intnet: "br-wan-fw", auto_config: false
+    fw.vm.network "private_network", type: "dhcp", auto_config: false
   end
 
-
-  # Configuração do BGP
-  config.vm.define "bgp_router" do |bgp|
-    bgp.vm.box = "bento/ubuntu-22.04"
-    bgp.vm.hostname = 'vagrant-bgp'
+  # VM BGP (conectada à eth2_bgp da VM openvswitch)
+  config.vm.define "bgp" do |bgp|
+    bgp.vm.box = "ubuntu/bionic64"
+    bgp.vm.hostname = "bgp"
     bgp.vm.provider "virtualbox" do |vb|
       vb.memory = "512"
       vb.cpus = 1
       vb.name = "vagrant_bgp"
     end
-    bgp.vm.network "private_network", virtualbox__intnet: "br-wan-bgp", auto_config: false
-    bgp.vm.provision "shell", path: "bgp_router.sh"
+    bgp.vm.network "private_network", type: "dhcp", auto_config: false
   end
 
 end
-
-# teste deploy
-# Vagrant.configure("2") do |config|
-#   # Configuração do Firewall
-#   config.vm.define "firewall" do |fw|
-#     fw.vm.box = "bento/ubuntu-22.04"
-#     fw.disksize.size = "20GB"
-#     fw.vm.hostname = "firewall"
-#     fw.vm.provider "virtualbox" do |vb|
-#       vb.memory = "1024"
-#       vb.cpus = 2
-#       vb.name = "vagrant_firewall"
-#     end
-#     fw.vm.network "private_network", ip: "192.168.100.1" # WAN (conectar ao BGP)
-#     fw.vm.network "private_network", ip: "192.168.100.2" # LAN (conectar ao Open vSwitch)
-#     fw.vm.provision "shell", path: "firewall.sh"
-#   end
-
-  
-#   # Configuração do Packet Shaper
-#   config.vm.define "bgp_router" do |bgp|
-#     bgp.vm.box = "bento/ubuntu-22.04"
-#     bgp.vm.hostname = "bgp_router"
-#     bgp.vm.provider "virtualbox" do |vb|
-#       vb.memory = "512"
-#       vb.cpus = 1
-#     end
-#     bgp.vm.network "private_network", ip: "192.168.100.1"
-#     bgp.vm.provision "shell", path: "bgp_router.sh"
-#   end
-  
-#   # Configuração do Open vSwitch
-#   config.vm.define "ovs" do |ovs|
-#     ovs.vm.box = "bento/ubuntu-22.04"
-#     ovs.disksize.size = "40GB"
-#     ovs.vm.hostname = "open-vswtich"
-#     ovs.vm.provider "virtualbox" do |vb|
-#       vb.memory = "1024"
-#       vb.cpus = 1
-#       vb.name = "vagrant_openvswtich"
-#     end
-#     ovs.vm.provision "shell", path: "open_v_switch.sh"
-#   end
-
-  
-
-  # # Configuração do CGNAT
-  # config.vm.define "cgnat" do |cgn|
-  #   cgn.vm.box = "bento/ubuntu-22.04"
-  #   cgn.disksize.size = "20GB"
-  #   cgn.vm.provider "virtualbox" do |vb|
-  #     vb.memory = "1024"
-  #     vb.cpus = 2
-  #     vb.name = "vagrant_cgnat"
-  #   end
-
-    # # Interfaces de rede no Open vSwitch
-    # cgn.vm.network "private_network", virtualbox__intnet: "br-core"
-    # cgn.vm.network "private_network", virtualbox__intnet: "br-client"
-    # cgn.vm.provision "shell", path: "cgnat.sh"
-  # end
-
-  # # Configuração do Servidor DHCP
-  # config.vm.define "dhcp" do |dhcp|
-  #   dhcp.vm.box = "bento/ubuntu-22.04"
-  #   dhcp.vm.provider "virtualbox" do |vb|
-  #     vb.memory = "256"
-  #     vb.cpus = 1
-  #     vb.name = "vagrant_dhcp"
-  #   end
-  #   dhcp.vm.network "private_network", auto_config: false
-  #   # dhcp.vm.provision "shell", path: "dhcp_server.sh"
-  # end
-
-  # # Configuração dos Serviços (DNS e PPPoE)
-  # {"dns" => "192.168.3.3", "pppoe" => "192.168.3.4"}.each do |service, _|
-  #   config.vm.define service do |srv|
-  #     srv.vm.box = "bento/ubuntu-22.04"
-  #     srv.vm.provider "virtualbox" do |vb|
-  #       vb.memory = "256"
-  #       vb.cpus = 1
-  #     end
-  #     srv.vm.network "private_network", auto_config: false
-  #     srv.vm.provision "shell", inline: <<-SHELL
-  #       ovs-vsctl add-port br-client eth0
-  #     SHELL
-  #   end
-  # end
-
-  # Configuração do Packet Shaper
-  # config.vm.define "packet_shaper" do |ps|
-  #   ps.vm.box = "bento/ubuntu-22.04"
-  #   ps.vm.provider "virtualbox" do |vb|
-  #     vb.memory = "512"
-  #     vb.cpus = 1
-  #   end
-  #   ps.vm.network "private_network", auto_config: false
-  #   # ps.vm.provision "shell", path: "packet_shaper.sh"
-  # end
-
-#   # Configuração do Cliente - Obtém IP via DHCP
-#   config.vm.define "cliente" do |cl|
-#     cl.vm.box = "bento/ubuntu-22.04"
-#     cl.vm.provider "virtualbox" do |vb|
-#       vb.memory = "512"
-#       vb.cpus = 1
-#     end
-#     cl.vm.network "private_network", auto_config: false
-#     # cl.vm.provision "shell", path: "client_test.sh"
-#   end
-# end
