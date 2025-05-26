@@ -1,18 +1,24 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-22.04"
   
+  # Configuração do BGP Internal (ISP)
   config.vm.define "bgp_internal" do |bgp1|
     bgp1.disksize.size = "20GB"
     bgp1.vm.hostname = 'bgp-internal'
     bgp1.vm.provider "virtualbox" do |vb|
       vb.memory = "1024"
-      vb.cpus = 1
+      vb.cpus = 2
       vb.name = "vagrant_bgp_internal"
+
+      # Interface 1 (WAN) -> conecta a TAP tap-fw-wan
+      vb.customize ["modifyvm", :id, "--nic3", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter3", "tap-bgp-wan"]
     end
-    bgp1.vm.network "private_network", ip: "192.168.33.10"
-    bgp1.vm.provision "shell", path: "scripts/bgp_internal_provision.sh"
+    bgp1.vm.network "private_network", ip: "192.168.56.10"
+    bgp1.vm.provision "shell", path: "scripts/bgp_internal.sh"
   end
 
+  # Configuração do BGP External (Internet)
   config.vm.define "bgp_external" do |bgp2|
     bgp2.disksize.size = "20GB"
     bgp2.vm.hostname = 'bgp-external'
@@ -21,21 +27,77 @@ Vagrant.configure("2") do |config|
       vb.cpus = 1
       vb.name = "vagrant_bgp_external"
     end
-    bgp2.vm.network "private_network", ip: "192.168.33.11"
-    bgp2.vm.provision "shell", path: "scripts/bgp_external_provision.sh"
+    bgp2.vm.network "private_network", ip: "192.168.56.11"
+    bgp2.vm.provision "shell", path: "scripts/bgp_external.sh"
   end
-  # # Configuração do Firewall
-  # config.vm.define "firewall" do |fw|
-  #   fw.vm.box = "bento/ubuntu-22.04"
-  #   fw.disksize.size = "20GB"
-  #   fw.vm.hostname = "firewall"
-  #   fw.vm.provider "virtualbox" do |vb|
-  #     vb.memory = "1024"
-  #     vb.cpus = 2
-  #     vb.name = "firewall"
-  #   end
-  #   fw.vm.network "private_network", ip: "192.168.100.1" # WAN (conectar ao BGP)
-  #   fw.vm.network "private_network", ip: "192.168.100.2" # LAN (conectar ao Open vSwitch)
-  #   fw.vm.provision "shell", path: "firewall.sh"
-  # end
+
+  # Configuração do Firewall
+  config.vm.define "firewall" do |fw|
+    fw.disksize.size = "20GB"
+    fw.vm.hostname = "firewall"
+    fw.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 2
+      vb.name = "vagrant_firewall"
+      
+      # Interface 1 (WAN) -> conecta a TAP tap-fw-wan
+      vb.customize ["modifyvm", :id, "--nic2", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter2", "tap-fw-wan"]
+
+      # Interface 2 (LAN) -> conecta a TAP tap-fw-lan
+      vb.customize ["modifyvm", :id, "--nic3", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter3", "tap-fw-lan"]
+      end
+    fw.vm.provision "shell", path: "scripts/firewall.sh"
+  end
+
+  # Configuração do CGNAT
+  config.vm.define "cgnat" do |cgnat|
+    cgnat.vm.hostname = "cgnat"  
+    cgnat.vm.provider "virtualbox" do |vb|
+      vb.name = "cgnat"
+      vb.memory = 1024
+      vb.cpus = 2
+      vb.name = "vagrant_cgnat"
+
+      # FW -> br-cgnat-fw
+      vb.customize ["modifyvm", :id, "--nic2", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter2", "tap-cgnat-fw"]
+
+      # WAN -> br-lan
+      vb.customize ["modifyvm", :id, "--nic3", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter3", "tap-cgnat-lan"]
+      end
+    cgnat.vm.provision "shell", path: "scripts/cgnat.sh"
+  end
+
+  # DNS Server
+  config.vm.define "dns" do |dns|
+    dns.vm.hostname = "dns"
+    dns.vm.provider "virtualbox" do |vb|
+      vb.name = "vagrant_dns"
+      vb.memory = 1024
+      vb.cpus = 1
+      vb.name = "vagrant_dns"
+      vb.customize ["modifyvm", :id, "--nic2", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter2", "tap-dns"]
+    end
+    dns.vm.provision "shell", path: "scripts/dns.sh"
+    dns.vm.provision "shell", path: "scripts/dns_site_bloqueado.sh"
+  end
+
+  # Servidor PPPoE
+  config.vm.define "pppoe_server" do |ppp|
+    ppp.vm.hostname = "pppoe-server"
+    ppp.vm.boot_timeout = 600
+    ppp.vm.provider "virtualbox" do |vb|
+      vb.name = "vagrant_pppoe"
+      vb.memory = 1024
+      vb.cpus = 2
+      vb.name = "vagrant_pppoe_server"
+      vb.customize ["modifyvm", :id, "--nic2", "bridged"]
+      vb.customize ["modifyvm", :id, "--bridgeadapter2", "tap-pppoe"]
+    end
+    ppp.vm.provision "shell", path: "scripts/pppoe_server.sh"
+  end
 end
