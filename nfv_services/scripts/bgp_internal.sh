@@ -23,10 +23,6 @@ sudo ip link set dev eth1 up
 sudo ip link set dev eth2 up
 
 
-# # Adiciona rota de retorno para a rede dos clientes PPPoE
-# sudo ip route add 10.0.20.0/24 via 10.0.0.2 dev eth2
-# sudo ip route add 10.0.1.0/24 via 10.0.0.2 dev eth2
-
 # Rota para CGNAT LAN (clientes)
 sudo ip route add 10.0.20.0/24 via 10.0.0.2 dev eth2
 
@@ -65,17 +61,9 @@ route-map IMPORT permit 10
 !
 EOF
 
-# remove acesso a internet
 sudo ip route del default via 10.0.2.2 dev eth0 
 # sudo ip route add default via 10.0.2.2 dev eth0
 
-
-##### SEÇÃO FINAL ANTIGA, REMOVIDA PARA TESTE
-#  address-family ipv4 unicast
-#   neighbor 192.168.56.11 route-map IMPORT in
-#   network 10.0.0.0/24
-#   network 10.0.1.0/24
-#  exit-address-family
 
 # Reinicia serviço
 sudo systemctl restart frr

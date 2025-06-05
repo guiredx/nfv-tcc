@@ -13,11 +13,14 @@ sudo ip link set dev eth1 up
 sudo ip addr add 10.0.20.213/24 dev eth1
 
 
-sudo ip route del default via 10.0.2.2 dev eth0 
+# sudo ip route del default via 10.0.2.15 dev eth0 
 # sudo ip route add default via 10.0.2.2 dev eth0
+# sudo ip route add 10.0.20.0/24 dev eth1
 
-sudo ip route add 10.0.20.0/24 dev eth1
+# Adiciona rota padrão para o cgnat (10.0.20.2)
+sudo ip route del default
 sudo ip route add default via 10.0.20.2 dev eth1
+
 
 
 echo "Configurando opções do servidor PPPoE..."
@@ -34,16 +37,6 @@ proxyarp
 nobsdcomp
 novj
 EOF
-
-# # Usuário: cliente / Senha: senha123
-# echo '"cliente" * "senha123" *' | sudo tee /etc/ppp/pap-secrets > /dev/null
-
-# echo 'senha123' | sudo passwd cliente
-
-
-# echo "Adicionando usuário 'cliente' para autenticação local (fake shell)..."
-# sudo useradd -r -s /bin/false cliente || true
-# sudo sed -i 's/^#\? *login/login/' /etc/ppp/options
 
 echo "Criando usuário 'cliente' para autenticação local com senha..."
 sudo useradd -s /bin/false -m cliente || true

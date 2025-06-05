@@ -53,10 +53,6 @@ route-map EXPORT permit 10
 !
 EOF
 
-## REMOVENDO PARA TESTE
-# route-map EXPORT permit 10
-#  set src 20.0.0.1
-
 # Reinicia serviço
 
 echo "🔧 Configurando NAT (MASQUERADE) para saída pela interface eth0..."

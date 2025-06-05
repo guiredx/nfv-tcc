@@ -3,7 +3,6 @@
 # Atualiza o sistema
 sudo apt update -y
 sudo DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
-# sudo apt install -y iproute2 net-tools 
 sudo apt-get install traceroute
 
 # Sobe interfaces (precaução)
@@ -34,11 +33,12 @@ sudo iptables -P OUTPUT ACCEPT
 INSTAGRAM_IP="157.240.222.174"
 sudo iptables -A FORWARD -d $INSTAGRAM_IP -j REJECT
 
-WEB_SERVER_LOCAL="10.0.20.100"
-sudo iptables -t nat -A PREROUTING -p tcp -d $INSTAGRAM_IP --dport 80 -j DNAT --to-destination $WEB_SERVER_LOCAL:8080
-sudo iptables -A FORWARD -p tcp -d $WEB_SERVER_LOCAL --dport 8080 -j ACCEPT
+echo "✅ Bloqueio do Instagram configurado"
 
-echo "✅ Bloqueio e redirecionamento do Instagram configurado para a porta 8080"
+# WEB_SERVER_LOCAL="10.0.20.100"
+# sudo iptables -t nat -A PREROUTING -p tcp -d $INSTAGRAM_IP --dport 80 -j DNAT --to-destination $WEB_SERVER_LOCAL:8080
+# sudo iptables -A FORWARD -p tcp -d $WEB_SERVER_LOCAL --dport 8080 -j ACCEPT
+# echo "✅ Bloqueio e redirecionamento do Instagram configurado para a porta 8080"
 
 # Salva as regras para persistência
 sudo netfilter-persistent save

@@ -4,6 +4,9 @@ echo "Atualizando Sistema..."
 sudo apt update
 sudo DEBIAN_FRONTEND=noninteractive apt install -y iptables iproute2 net-tools iptables-persistent traceroute
 
+# Instala o conntrack, se ainda não estiver presente
+sudo apt-get install -y conntrack
+
 echo "Configurando interfaces..."
 sudo ip link set dev eth1 up
 sudo ip link set dev eth2 up
@@ -40,3 +43,10 @@ sudo iptables -t nat -A POSTROUTING -s 10.0.30.0/24 -o eth1 -j MASQUERADE
 echo "Salvando..."
 sudo netfilter-persistent save
 sudo netfilter-persistent reload
+
+# # Comandos Manuais:
+# sudo stdbuf -oL conntrack -E | awk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0; fflush(); }'
+# sudo stdbuf -oL conntrack -E | awk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0; fflush(); }' | grep 10.0.30.
+# sudo conntrack -L | grep 10.0.30.
+# sudo conntrack -E
+# sudo conntrack -E -p tcp/icmp
