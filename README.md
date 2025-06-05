@@ -1,4 +1,4 @@
-# NFV_FUNCIONANDO - Laboratório de Virtualização de Funções de Rede (NFV)
+# PROTÓTIPO DE NFV PARA UM ISP - Laboratório de Virtualização de Funções de Rede (NFV)
 
 Este projeto é uma Prova de Conceito (PoC) acadêmica que simula a infraestrutura de um pequeno provedor de serviços de Internet (ISP) utilizando **virtualização de funções de rede (NFV)** com ferramentas de código aberto como **Vagrant**, **Open vSwitch**, **FRRouting**, **iptables**, **BIND9**, **PPP** e **FreeRADIUS**.
 
