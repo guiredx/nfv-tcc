@@ -43,3 +43,9 @@ echo "✅ Bloqueio do Instagram configurado"
 # Salva as regras para persistência
 sudo netfilter-persistent save
 sudo netfilter-persistent reload
+
+
+
+# # Bloqueio 
+# sudo iptables -A FORWARD -s 10.0.1.2 -j DROP
+# sudo iptables -D FORWARD -s 10.0.1.2 -j DROP

@@ -61,7 +61,7 @@ sudo sysctl -p
 # Adiciona rota de retorno para clientes PPPoE
 sudo ip route add 10.0.30.0/24 via 10.0.20.213 dev eth1
 
-# BLOQUEIO E REDIRECIONAMENTO DO INSTAGRAM
+# REDIRECIONAMENTO DO INSTAGRAM
 echo "Configurando bloqueio do domínio instagram.com e redirecionando para servidor local..."
 
 sudo bash -c 'echo "zone \"instagram.com\" { type master; file \"/etc/bind/zones/db.instagram.com\"; };" >> /etc/bind/named.conf.local'

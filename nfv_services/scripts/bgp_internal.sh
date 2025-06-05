@@ -68,3 +68,6 @@ sudo ip route del default via 10.0.2.2 dev eth0
 # Reinicia serviço
 sudo systemctl restart frr
 echo "bgp_internal configurado (modo stub, sem anunciar redes)."
+
+
+# sudo tcpdump -i eth2 icmp
